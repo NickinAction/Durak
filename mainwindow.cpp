@@ -16,7 +16,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     deckGenerator();
     giveoutCards();
-    connect(this->ui->readInput, SIGNAL(clicked()), this, SLOT(playerTurn()));
+    connect(this->ui->readInput, SIGNAL(clicked()), this, SLOT(playerAttackingTurn()));
+    connect(this->ui->finishTurn, SIGNAL(clicked()), this, SLOT(opponentAttackingTurn()));
+    connect(this->ui->passButton, SIGNAL(clicked()), this, SLOT(opponentDefendingTurn()));
     impossibleFunctionAttempt.setText("You cannot do that.");
 }
 
@@ -70,7 +72,7 @@ void MainWindow::decideFirstPlayer() {
     int z = smallestTrumpCard;
     if (z < y) { //can't be equal since it's a single deck
         currentTurn = 2;
-        opponentTurn();
+        opponentAttackingTurn();
     }
     else {
         //If there was no trump card, both y & z == 15, so human goes first
@@ -78,11 +80,15 @@ void MainWindow::decideFirstPlayer() {
     }
 }
 
-void MainWindow::opponentTurn() {
+void MainWindow::opponentAttackingTurn() {
     updateAll();
 }
 
-void MainWindow::playerTurn() {
+void MainWindow::opponentDefendingTurn() {
+    updateAll();
+}
+
+void MainWindow::playerAttackingTurn() {
     int iRemember;
     //qDebug("Hello, it's your turn now! =)");
     QString card = this->ui->cardInput->text();
@@ -125,6 +131,10 @@ void MainWindow::playerTurn() {
             }
         }
     }
+}
+
+void MainWindow::playerDefendingTurn() {
+    updateAll();
 }
 
 void MainWindow::updateAll() {

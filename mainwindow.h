@@ -24,15 +24,28 @@ public:
 
 
 private slots:
+
+    //Starter functions
+
     void giveoutCards();
     void deckGenerator();
     void decideFirstPlayer();
+
+    //Turns
+
+    void playerAttackingTurn();
+    void opponentAttackingTurn();
+
+    void playerDefendingTurn();
+    void opponentDefendingTurn();
+
+    //System functions
+
+    void updateAll();
     void showCards();
     int getCardRank(std::string card);
     char getCardSuit (std::string a);
-    void playerTurn();
-    void opponentTurn();
-    void updateAll();
+
 private:
     int currentTurn;
     Ui::MainWindow *ui;

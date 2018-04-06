@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>735</width>
-    <height>399</height>
+    <height>449</height>
    </rect>
   </property>
   <property name="font">
@@ -76,7 +76,7 @@
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;LEFT IN DECK: &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;TRUMP SUIT: &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="playerTurnIndicator">
     <property name="geometry">
      <rect>
       <x>460</x>
@@ -145,6 +145,42 @@
     </property>
     <property name="text">
      <string>TABLE</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="finishTurn">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>280</y>
+      <width>91</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>FINISH TURN</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="passButton">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>280</y>
+      <width>91</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>PASS</string>
     </property>
    </widget>
   </widget>
