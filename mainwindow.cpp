@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     deckGenerator();
     giveoutCards();
     connect(this->ui->readInput, SIGNAL(clicked()), this, SLOT(playerTurn()));
+    impossibleFunctionAttempt.setText("You cannot do that.");
 }
 
 MainWindow::~MainWindow()
@@ -74,12 +75,8 @@ void MainWindow::decideFirstPlayer() {
     else {
         //If there was no trump card, both y & z == 15, so human goes first
         currentTurn = 1;
-        startPlayerTurn();
     }
 }
-
-
-void MainWindow::startPlayerTurn() {}
 
 void MainWindow::opponentTurn() {
     updateAll();
@@ -87,7 +84,7 @@ void MainWindow::opponentTurn() {
 
 void MainWindow::playerTurn() {
     int iRemember;
-    qDebug("Hello, it's your turn now! =)");
+    //qDebug("Hello, it's your turn now! =)");
     QString card = this->ui->cardInput->text();
     bool existence = false;
     for (unsigned i = 0; i < myDeck.size(); i++) {
@@ -97,6 +94,7 @@ void MainWindow::playerTurn() {
             break;
         }
     }
+    bool foundRankConnection = false;
     if(!existence) {
         QMessageBox incorrectInput;
         incorrectInput.setText("Your input was inappropriate, please try again.");
@@ -104,13 +102,29 @@ void MainWindow::playerTurn() {
         updateAll();
     }
     else {
-        qDebug("Size: %d We remove: %d", myDeck.size(), iRemember);
-        tableCards.push_back(myDeck[iRemember]);
-        qDebug("Size: %d We remove: %d", myDeck.size(), iRemember);
-        myDeck.erase(myDeck.begin() + iRemember, myDeck.begin() + iRemember + 1);
-        updateAll();
-    }
 
+        if (tableCards.empty()) {
+            tableCards.push_back(myDeck[iRemember]);
+            myDeck.erase(myDeck.begin() + iRemember, myDeck.begin() + iRemember + 1);
+            updateAll();
+        }
+        else {
+            for (unsigned i = 0; i < tableCards.size(); i++) {
+                if (getCardRank(myDeck[iRemember]) == getCardRank(tableCards[i])){
+                    foundRankConnection = true;
+                }
+            }
+            if (foundRankConnection) {
+                tableCards.push_back(myDeck[iRemember]);
+                myDeck.erase(myDeck.begin() + iRemember, myDeck.begin() + iRemember + 1);
+                updateAll();
+            }
+            else {
+                impossibleFunctionAttempt.exec();
+                updateAll();
+            }
+        }
+    }
 }
 
 void MainWindow::updateAll() {

@@ -8,6 +8,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <vector>
+#include <QMessageBox>
 
 namespace Ui {
 class MainWindow;
@@ -29,7 +30,6 @@ private slots:
     void showCards();
     int getCardRank(std::string card);
     char getCardSuit (std::string a);
-    void startPlayerTurn();
     void playerTurn();
     void opponentTurn();
     void updateAll();
@@ -46,6 +46,8 @@ private:
     std::vector <std::string> myDeck;
     std::vector <std::string> opponentDeck;
     std::vector <std::string> tableCards;
+
+    QMessageBox impossibleFunctionAttempt;
 };
 
 #endif
