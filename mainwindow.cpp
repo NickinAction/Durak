@@ -5,6 +5,9 @@
 #include <ctime>
 #include <cstdlib>
 #include <vector>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -13,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     deckGenerator();
     giveoutCards();
+    connect(this->ui->readInput, SIGNAL(clicked()), this, SLOT(playerTurn()));
 }
 
 MainWindow::~MainWindow()
@@ -32,7 +36,7 @@ void MainWindow::deckGenerator() {
 }
 
 void MainWindow::giveoutCards() {
-    trumpCard = cardSuit(shuffledDeck.front());
+    trumpCard = getCardSuit(shuffledDeck.front());
     //std::string x;
     for (int i = 0; i < 6; i++){
         opponentDeck.push_back(shuffledDeck.back());
@@ -44,49 +48,98 @@ void MainWindow::giveoutCards() {
         //x = x + " " + shuffledDeck.back();
         shuffledDeck.pop_back();
     }
-    setCards();
-    this->ui->DECK->setText("DECK\n\n\n\nTRUMP CARD: " + QString::fromStdString(std::string(1, trumpCard)));
+    updateAll();
 }
 
 void MainWindow::decideFirstPlayer() {
     int smallestTrumpCard = 15;
     for (int i = 0; i < 6; i++) {
-        if (cardSuit(myDeck[i]) == trumpCard && cardRank(myDeck[i]) < smallestTrumpCard) {
-            smallestTrumpCard = cardRank(myDeck[i]);
+        if (getCardSuit(myDeck[i]) == trumpCard && getCardRank(myDeck[i]) < smallestTrumpCard) {
+            smallestTrumpCard = getCardRank(myDeck[i]);
         }
     }
     int y = smallestTrumpCard;
     smallestTrumpCard = 15;
 
     for (int i = 0; i < 6; i++) {
-        if (cardSuit(opponentDeck[i]) == trumpCard && cardRank(opponentDeck[i]) < smallestTrumpCard) {
-            smallestTrumpCard = cardRank(opponentDeck[i]);
+        if (getCardSuit(opponentDeck[i]) == trumpCard && getCardRank(opponentDeck[i]) < smallestTrumpCard) {
+            smallestTrumpCard = getCardRank(opponentDeck[i]);
         }
     }
     int z = smallestTrumpCard;
     if (z < y) { //can't be equal since it's a single deck
-        firstPlayer = 2;
+        currentTurn = 2;
+        opponentTurn();
     }
     else {
         //If there was no trump card, both y & z == 15, so human goes first
-        firstPlayer = 1;
+        currentTurn = 1;
+        startPlayerTurn();
     }
 }
 
-void MainWindow::setCards() {
-    std::string deckLabel;
+
+void MainWindow::startPlayerTurn() {}
+
+void MainWindow::opponentTurn() {
+    updateAll();
+}
+
+void MainWindow::playerTurn() {
+    int iRemember;
+    qDebug("Hello, it's your turn now! =)");
+    QString card = this->ui->cardInput->text();
+    bool existence = false;
     for (unsigned i = 0; i < myDeck.size(); i++) {
-        deckLabel = deckLabel + " " + myDeck[i];
+        if (myDeck[i] == card.toStdString()) {
+            existence = true;
+            iRemember = i;
+            break;
+        }
     }
-    this->ui->YOU->setText(QString::fromStdString(deckLabel));
+    if(!existence) {
+        QMessageBox incorrectInput;
+        incorrectInput.setText("Your input was inappropriate, please try again.");
+        incorrectInput.exec();
+        updateAll();
+    }
+    else {
+        qDebug("Size: %d We remove: %d", myDeck.size(), iRemember);
+        tableCards.push_back(myDeck[iRemember]);
+        qDebug("Size: %d We remove: %d", myDeck.size(), iRemember);
+        myDeck.erase(myDeck.begin() + iRemember, myDeck.begin() + iRemember + 1);
+        updateAll();
+    }
+
+}
+
+void MainWindow::updateAll() {
+    this->ui->DECK->setText("LEFT IN DECK: " +
+                            QString::fromStdString(std::to_string(shuffledDeck.size())) +
+                            "\n\n\n\nTRUMP SUIT: " +
+                            QString::fromStdString(std::string(1, trumpCard)));
+    showCards();
+}
+
+void MainWindow::showCards() {
+    std::string playerDeckLabel;
+    std::string tableCardsLabel;
+    for (unsigned i = 0; i < myDeck.size(); i++) {
+        playerDeckLabel = playerDeckLabel + " " + myDeck[i];
+    }
+    for (unsigned i = 0; i < tableCards.size(); i++) {
+        tableCardsLabel = tableCardsLabel + " " + tableCards[i];
+    }
+    this->ui->YOU->setText(QString::fromStdString(playerDeckLabel));
+    this->ui->TABLE->setText("TABLE: " + QString::fromStdString(tableCardsLabel));
     this->ui->OPPONENT->setText(QString::fromStdString(std::string(opponentDeck.size(), 'X')));
 }
 
-char MainWindow::cardSuit(std::string a) {
+char MainWindow::getCardSuit(std::string a) {
     return a[a.size()-1];
 }
 
-int MainWindow::cardRank(std::string card) {
+int MainWindow::getCardRank(std::string card) {
     char c = card[0];
     if (c >= '6' && c <= '9') return c-'0';
     switch (c) {

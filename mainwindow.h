@@ -26,11 +26,15 @@ private slots:
     void giveoutCards();
     void deckGenerator();
     void decideFirstPlayer();
-    void setCards();
-    int cardRank(std::string card);
-    char cardSuit (std::string a);
+    void showCards();
+    int getCardRank(std::string card);
+    char getCardSuit (std::string a);
+    void startPlayerTurn();
+    void playerTurn();
+    void opponentTurn();
+    void updateAll();
 private:
-    int firstPlayer;
+    int currentTurn;
     Ui::MainWindow *ui;
     char trumpCard ;
     std::string order[9] = {"6", "7", "8", "9", "10", "J", "Q", "K", "A"};
@@ -41,6 +45,7 @@ private:
     std::vector <std::string> shuffledDeck;
     std::vector <std::string> myDeck;
     std::vector <std::string> opponentDeck;
+    std::vector <std::string> tableCards;
 };
 
 #endif
