@@ -12,7 +12,7 @@
   </property>
   <property name="font">
    <font>
-    <pointsize>15</pointsize>
+    <pointsize>20</pointsize>
    </font>
   </property>
   <property name="windowTitle">
@@ -23,8 +23,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>230</y>
-      <width>421</width>
+      <y>280</y>
+      <width>381</width>
       <height>41</height>
      </rect>
     </property>
@@ -36,13 +36,16 @@
     <property name="text">
      <string>YOU</string>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QLabel" name="OPPONENT">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>0</y>
-      <width>531</width>
+      <y>10</y>
+      <width>381</width>
       <height>41</height>
      </rect>
     </property>
@@ -57,14 +60,17 @@
     <property name="text">
      <string>OPPONENT</string>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QLabel" name="DECK">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>50</y>
-      <width>191</width>
-      <height>171</height>
+      <x>420</x>
+      <y>10</y>
+      <width>211</width>
+      <height>121</height>
      </rect>
     </property>
     <property name="font">
@@ -75,19 +81,22 @@
     <property name="text">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;LEFT IN DECK: &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;TRUMP SUIT: &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QLabel" name="playerTurnIndicator">
     <property name="geometry">
      <rect>
-      <x>460</x>
-      <y>170</y>
-      <width>181</width>
+      <x>420</x>
+      <y>140</y>
+      <width>211</width>
       <height>71</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>10</pointsize>
+      <pointsize>15</pointsize>
       <weight>50</weight>
       <italic>false</italic>
       <bold>false</bold>
@@ -100,42 +109,50 @@
     <property name="text">
      <string>YOUR TURN</string>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QLineEdit" name="cardInput">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>230</y>
-      <width>101</width>
+      <x>420</x>
+      <y>220</y>
+      <width>51</width>
       <height>41</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
     </property>
    </widget>
    <widget class="QPushButton" name="readInput">
     <property name="geometry">
      <rect>
-      <x>560</x>
-      <y>230</y>
+      <x>480</x>
+      <y>220</y>
       <width>71</width>
       <height>41</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>11</pointsize>
+      <pointsize>10</pointsize>
      </font>
     </property>
     <property name="text">
-     <string>Read</string>
+     <string>READ</string>
     </property>
    </widget>
    <widget class="QLabel" name="TABLE">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>120</y>
-      <width>401</width>
-      <height>51</height>
+      <x>10</x>
+      <y>70</y>
+      <width>381</width>
+      <height>191</height>
      </rect>
     </property>
     <property name="font">
@@ -146,13 +163,16 @@
     <property name="text">
      <string>TABLE</string>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QPushButton" name="finishTurn">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>280</y>
-      <width>91</width>
+      <x>500</x>
+      <y>270</y>
+      <width>131</width>
       <height>51</height>
      </rect>
     </property>
@@ -168,9 +188,9 @@
    <widget class="QPushButton" name="passButton">
     <property name="geometry">
      <rect>
-      <x>540</x>
-      <y>280</y>
-      <width>91</width>
+      <x>420</x>
+      <y>270</y>
+      <width>71</width>
       <height>51</height>
      </rect>
     </property>
@@ -181,6 +201,24 @@
     </property>
     <property name="text">
      <string>PASS</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>220</y>
+      <width>71</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>TAKE</string>
     </property>
    </widget>
   </widget>
