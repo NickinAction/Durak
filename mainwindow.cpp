@@ -18,11 +18,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     deckGenerator();
     giveoutCards();
-    connect(this->ui->readInput, SIGNAL(clicked()), this, SLOT(readInput()));
+    connect(this->ui->readInput, SIGNAL(clicked()), this, SLOT(redirectInput()));
     connect(this->ui->finishTurn, SIGNAL(clicked()), this, SLOT(opponentAttackingTurn()));
     connect(this->ui->passButton, SIGNAL(clicked()), this, SLOT(opponentDefendingTurn()));
+    connect(this->ui->takeButton, SIGNAL(clicked()), this, SLOT(takeCards()));
     impossibleFunctionAttempt.setText("You cannot do that.");
     impossibleDefenseAttempt.setText("That card can't beat the opponent's card");
+    incorrectInput.setText("Your input was inappropriate, please try again.");
 }
 
 MainWindow::~MainWindow()
@@ -88,8 +90,8 @@ void MainWindow::opponentAttackingTurn() {
     currentTurntoAttack = 2;
     int randomCard = rand() % opponentDeck.size();
     tableCards.push_back(opponentDeck[randomCard]);
-    qDebug() << randomCard;
-    qDebug() << QString::fromStdString(opponentDeck[randomCard]);
+    //qDebug() << randomCard;
+    //qDebug() << QString::fromStdString(opponentDeck[randomCard]);
     opponentDeck.erase(opponentDeck.begin() + randomCard, opponentDeck.begin() + randomCard + 1);
     updateAll();
     this->ui->readInput->setEnabled(true);
@@ -131,93 +133,72 @@ void MainWindow::opponentDefendingTurn() {
     this->ui->readInput->setEnabled(true);
 }
 
-void MainWindow::playerAttackingTurn() {
-    currentTurntoAttack  = 1;
-    int iRemember;
-    QString attackingCard = this->ui->cardInput->text();
-    bool existence = false;
-    for (unsigned i = 0; i < myDeck.size(); i++) {
-        if (myDeck[i] == attackingCard.toStdString()) {
-            existence = true;
-            iRemember = i;
-            break;
+/*void MainWindow::playerAttackingTurn(int cardNumber) {
+    currentTurntoAttack = 1;
+    bool foundRankConnection = false;
+    // Saves whether the card of the same rank you try to put
+    // exists on the tableif (tableCards.empty())
+    for (unsigned i = 0; i < tableCards.size(); i++) {
+        if (getCardRank(myDeck[cardNumber]) == getCardRank(tableCards[i])){
+            foundRankConnection = true;
         }
     }
-    bool foundRankConnection = false;
-    if(!existence) {
-        QMessageBox incorrectInput;
-        incorrectInput.setText("Your input was inappropriate, please try again.");
-        incorrectInput.exec();
+    if (foundRankConnection) {
+        tableCards.push_back(myDeck[cardNumber]);
+        myDeck.erase(myDeck.begin() + cardNumber, myDeck.begin() + cardNumber + 1);
         updateAll();
     }
     else {
-
-        if (tableCards.empty()) {
-            tableCards.push_back(myDeck[iRemember]);
-            myDeck.erase(myDeck.begin() + iRemember, myDeck.begin() + iRemember + 1);
-            updateAll();
-        }
-        else {
-            for (unsigned i = 0; i < tableCards.size(); i++) {
-                if (getCardRank(myDeck[iRemember]) == getCardRank(tableCards[i])){
-                    foundRankConnection = true;
-                }
-            }
-            if (foundRankConnection) {
-                tableCards.push_back(myDeck[iRemember]);
-                myDeck.erase(myDeck.begin() + iRemember, myDeck.begin() + iRemember + 1);
-                updateAll();
-            }
-            else {
-                impossibleFunctionAttempt.exec();
-                updateAll();
-            }
-        }
+        impossibleFunctionAttempt.exec();
+         updateAll();
     }
+}*/
+
+void MainWindow::playerAttackingTurn(int cardNumber) {
+    currentTurntoAttack = 1;
+    while
 }
 
-void MainWindow::playerDefendingTurn() {
-    int defendingCardNumber = -145;
+void MainWindow::playerDefendingTurn(int cardNumber) {
+    int defendingCardNumber = cardNumber;
     QString defendingCard = this->ui->cardInput->text();
+
     char playerCardSuit = getCardSuit(defendingCard.toStdString());
     int playerCardRank = getCardRank(defendingCard.toStdString());
-    bool existence = false;
 
-    for (unsigned i = 0; i < myDeck.size(); i++) {
-        if (myDeck[i] == defendingCard.toStdString()) {
-            existence = true;
-            defendingCardNumber = i;
-            break;
-        }
-    }
+    char tableCardSuit = getCardSuit(tableCards[0]);
+    int tableCardRank = getCardRank(tableCards[0]);
 
-    if(!existence) {
-        QMessageBox incorrectInput;
-        incorrectInput.setText("Your input was inappropriate, please try again.");
-        incorrectInput.exec();
+    if ((playerCardSuit == trumpCard && tableCardSuit != trumpCard)
+        ||(playerCardSuit == tableCardSuit && playerCardRank > tableCardRank)) {
+        usedCards.push_back(tableCards[0]);
+        usedCards.push_back(myDeck[defendingCardNumber]);
+        tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
+        myDeck.erase(myDeck.begin(), myDeck.begin() + 1);
         updateAll();
     }
     else {
-        char tableCardSuit = getCardSuit(tableCards[0]);
-        int tableCardRank = getCardRank(tableCards[0]);
-
-        if ((playerCardSuit == trumpCard && tableCardSuit != trumpCard)
-            ||(playerCardSuit == tableCardSuit && playerCardRank > tableCardRank)) {
-
-            usedCards.push_back(tableCards[0]);
-            usedCards.push_back(myDeck[defendingCardNumber]);
-            tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
-            myDeck.erase(myDeck.begin(), myDeck.begin() + 1);
-            updateAll();
-        }
-        else {
-            impossibleDefenseAttempt.exec();
-            updateAll();
-        }
+       impossibleDefenseAttempt.exec();
+       updateAll();
     }
 }
 
 
+void MainWindow::takeCards() {
+    int turn = getCurrentTurn();
+    if (!tableCards.empty() && turn == 2) {
+        while (!usedCards.empty()) {
+            myDeck.push_back(usedCards.back());
+            usedCards.pop_back();
+        }
+        while (!tableCards.empty()) {
+            myDeck.push_back(tableCards.back());
+            usedCards.pop_back();
+        }
+    } else {
+        impossibleFunctionAttempt.exec();
+    }
+}
 void MainWindow::updateAll() {
     this->ui->DECK->setText("LEFT IN DECK: " +
                             QString::fromStdString(std::to_string(shuffledDeck.size())) +
@@ -240,11 +221,11 @@ void MainWindow::showCards() {
     this->ui->OPPONENT->setText(QString::fromStdString(std::string(opponentDeck.size(), 'X')));
 }
 
-char MainWindow::getCardSuit(std::string a) {
-    return a[a.size()-1];
+char MainWindow::getCardSuit(QString card) {
+    return card[card.size()-1];
 }
 
-int MainWindow::getCardRank(std::string card) {
+int MainWindow::getCardRank(QString card) {
     char c = card[0];
     if (c >= '6' && c <= '9') return c-'0';
     switch (c) {
@@ -272,12 +253,44 @@ int MainWindow::getCurrentTurn() {
     }
 }
 
-void MainWindow::readInput() {
+void MainWindow::passTurn() {
+    int turn = getCurrentTurn();
+    if (turn == 1) {
+        pass = 2;
+    }
+    else if (turn == 2) {
+        pass = 1;
+    }
+}
+
+void MainWindow::redirectInput() {
+
     int currentTurn = getCurrentTurn();
-    if (currentTurn == 1) {
-        playerAttackingTurn();
-    } else {
-        playerDefendingTurn();
+
+    int cardNumber = -145;
+    QString card = this->ui->cardInput->text();
+
+    bool existence = false;
+
+    for (unsigned i = 0; i < myDeck.size(); i++) {
+        if (myDeck[i] == card.toStdString()) {
+            existence = true;
+            cardNumber = i;
+            break;
+        }
     }
 
+    if(existence) {
+        if (currentTurn == 1) {
+            playerAttackingTurn(cardNumber);
+        }
+        else {
+            playerDefendingTurn(cardNumber);
+        }
+
+    }
+    else {
+        incorrectInput.exec();
+        updateAll();
+    }
 }

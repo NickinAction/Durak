@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <vector>
 #include <QMessageBox>
+#include <QDebug>
 
 namespace Ui {
 class MainWindow;
@@ -33,25 +34,31 @@ private slots:
 
     //Turns
 
-    void playerAttackingTurn();
+    void playerAttackingTurn(int cardNumber);
     void opponentAttackingTurn();
 
-    void playerDefendingTurn();
+    void playerDefendingTurn(int cardNumber);
     void opponentDefendingTurn();
 
     //System functions
-
-    void readInput();
+    void redirectInput();
     void updateAll();
     void showCards();
-    int getCardRank(std::string card);
-    char getCardSuit (std::string a);
+    char getCardSuit (QString card);
+    int getCardRank(QString card);
     int getCurrentTurn();
+
+    void passTurn();
+
+    // Other
+
+    void takeCards();
 
 private:
     int currentTurntoAttack;
     Ui::MainWindow *ui;
     char trumpCard;
+    int pass = 3;
     std::string order[9] = {"6", "7", "8", "9", "10", "J", "Q", "K", "A"};
     std::string starterDeck[36] = {"6S", "7S", "8S", "9S", "10S", "JS", "QS", "KS", "AS",
                                    "6C", "7C", "8C", "9C", "10C", "JC", "QC", "KC", "AC",
@@ -65,6 +72,8 @@ private:
 
     QMessageBox impossibleFunctionAttempt;
     QMessageBox impossibleDefenseAttempt;
+    QMessageBox incorrectInput;
+    QMessageBox impossibleTakeAttempt;
 };
 
 #endif
