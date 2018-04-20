@@ -2,14 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <deque>
-#include <string>
-#include <random>
-#include <ctime>
-#include <cstdlib>
-#include <vector>
+#include <QString>
 #include <QMessageBox>
-#include <QDebug>
+#include <vector>
 
 namespace Ui {
 class MainWindow;
@@ -23,57 +18,55 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-
 private slots:
-
     //Starter functions
-
     void giveoutCards();
     void deckGenerator();
     void decideFirstPlayer();
 
-    //Turns
+    //Player attacks
+    void placeAttackingCard();
+    void playerPass();
+    void playerFinishTurn();
 
-    void playerAttackingTurn(int cardNumber);
-    void opponentAttackingTurn();
-
-    void playerDefendingTurn(int cardNumber);
-    void opponentDefendingTurn();
-
-    //System functions
-    void redirectInput();
-    void updateAll();
-    void showCards();
-    char getCardSuit (QString card);
-    int getCardRank(QString card);
-    int getCurrentTurn();
-
-    void passTurn();
-
-    // Other
-
+    //Player defends
+    void placeDefendingCard();
     void takeCards();
 
+    //Computer turns
+    void computerAttacks();
+    void computerDefends();
+
+    //System commands
+    void readCardFilter();
+    void update();
+    QChar getCardSuit(QString card);
+    int getCardRank(QString card);
+    QString getCurrentState();
+
 private:
-    int currentTurntoAttack;
     Ui::MainWindow *ui;
-    char trumpCard;
-    int pass = 3;
-    std::string order[9] = {"6", "7", "8", "9", "10", "J", "Q", "K", "A"};
-    std::string starterDeck[36] = {"6S", "7S", "8S", "9S", "10S", "JS", "QS", "KS", "AS",
+
+    //For card generation purposes
+    QString order[9] = {"6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+    QString starterDeck[36] = {"6S", "7S", "8S", "9S", "10S", "JS", "QS", "KS", "AS",
                                    "6C", "7C", "8C", "9C", "10C", "JC", "QC", "KC", "AC",
                                    "6H", "7H", "8H", "9H", "10H", "JH", "QH", "KH", "AH",
                                    "6D", "7D", "8D", "9D", "10D", "JD", "QD", "KD", "AD"};
-    std::vector <std::string> shuffledDeck;
-    std::vector <std::string> myDeck;
-    std::vector <std::string> opponentDeck;
-    std::vector <std::string> tableCards;
-    std::vector <std::string> usedCards;
+    std::vector <QString> shuffledDeck;
+    QString trumpCard;
 
-    QMessageBox impossibleFunctionAttempt;
+    std::vector <QString> playerDeck;
+    std::vector <QString> opponentDeck;
+    std::vector <QString> tableCards;
+    std::vector <QString> tempBeatenCards;
+
+    QString state; //values: "PA", "PD", "CA", "CD"
+
+    //Error messages
     QMessageBox impossibleDefenseAttempt;
     QMessageBox incorrectInput;
     QMessageBox impossibleTakeAttempt;
 };
 
-#endif
+#endif // MAINWINDOW_H
