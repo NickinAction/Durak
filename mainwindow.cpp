@@ -1,8 +1,15 @@
-#include <QString>
-#include <QMessageBox>
-#include <vector>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QMainWindow>
+#include <deque>
+#include <random>
+#include <ctime>
+#include <cstdlib>
+#include <vector>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QDebug>
+#include <QString>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -15,16 +22,57 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
 void MainWindow::deckGenerator() {
-
-}
-
-void MainWindow::decideFirstPlayer() {
-
+    shuffledDeck.resize(36);
+    srand(time(NULL));
+    for (int i = 0; i < 36; i++) {
+        shuffledDeck[i] = starterDeck[i];
+    }
+    for (int i = 0; i < 10000; i++) {
+        std::swap(shuffledDeck[rand()%36], shuffledDeck[rand()%36]);
+    }
 }
 
 void MainWindow::giveoutCards() {
+    trumpCard = getCardSuit(shuffledDeck.front());
+    //std::string x;
+    for (int i = 0; i < 6; i++){
+        opponentDeck.push_back(shuffledDeck.back());
+        //x = x + " " + shuffledDeck.back();
+        shuffledDeck.pop_back();
+    }
+    for (int i = 0; i < 6; i++){
+        playerDeck.push_back(shuffledDeck.back());
+        //x = x + " " + shuffledDeck.back();
+        shuffledDeck.pop_back();
+    }
+    update();
+}
 
+void MainWindow::decideFirstPlayer() {
+    int smallestTrumpCard = 15;
+    for (int i = 0; i < 6; i++) {
+        if (getCardSuit(playerDeck[i]) == trumpCard && getCardRank(playerDeck[i]) < smallestTrumpCard) {
+            smallestTrumpCard = getCardRank(playerDeck[i]);
+        }
+    }
+    int y = smallestTrumpCard;
+    smallestTrumpCard = 15;
+
+    for (int i = 0; i < 6; i++) {
+        if (getCardSuit(opponentDeck[i]) == trumpCard && getCardRank(opponentDeck[i]) < smallestTrumpCard) {
+            smallestTrumpCard = getCardRank(opponentDeck[i]);
+        }
+    }
+    int z = smallestTrumpCard;
+    if (z < y) { //can't be equal since it's a single deck
+        state = "CA";
+    }
+    else {
+        //If there was no trump card, both y & z == 15, so human goes first
+        state = "PA";
+    }
 }
 
 void MainWindow::placeAttackingCard() {

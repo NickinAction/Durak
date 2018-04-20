@@ -1,10 +1,18 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 #include <QMainWindow>
-#include <QString>
-#include <QMessageBox>
+#include <deque>
+#include <random>
+#include <ctime>
+#include <cstdlib>
 #include <vector>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QDebug>
+#include <QString>
 
 namespace Ui {
 class MainWindow;
