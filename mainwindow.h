@@ -33,17 +33,20 @@ private slots:
     void decideFirstPlayer();
 
     //Player attacks
-    void placeAttackingCard();
+    void placeAttackingCard(int cardNum);
     void playerPass();
     void playerFinishTurn();
 
     //Player defends
-    void placeDefendingCard();
+    void placeDefendingCard(int cardNum);
     void takeCards();
 
     //Computer turns
     void computerAttacks();
     void computerDefends();
+
+    //Mid-turn
+    void fillHands();
 
     //System commands
     void readCardFilter();
@@ -72,6 +75,8 @@ private:
     QString state; //values: "PA", "PD", "CA", "CD"
 
     //Error messages
+    QMessageBox incorrectTimeError; //Not the player's turn
+    QMessageBox impossibleAttackAttempt;
     QMessageBox impossibleDefenseAttempt;
     QMessageBox incorrectInput;
     QMessageBox impossibleTakeAttempt;

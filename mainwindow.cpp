@@ -16,6 +16,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    deckGenerator();
+    giveoutCards();
+    decideFirstPlayer();
+
+    connect(this->ui->readInput, SIGNAL(clicked()), this, SLOT(readCardFilter()));
+    connect(this->ui->finishTurn, SIGNAL(clicked()), this, SLOT(playerFinishTurn()));
+    connect(this->ui->passButton, SIGNAL(clicked()), this, SLOT(playerPass()));
+    connect(this->ui->takeButton, SIGNAL(clicked()), this, SLOT(takeCards()));
+
+
+    impossibleAttackAttempt.setText("You cannot currently place this card.");
+    impossibleDefenseAttempt.setText("That card can't beat the opponent's card.");
+    incorrectInput.setText("This card does not exist in your deck.");
+    incorrectTimeError.setText("Please wait for your turn.");
+    impossibleTakeAttempt.setText("You cannot take anything now.");
+
+    update();
 }
 
 MainWindow::~MainWindow()
@@ -75,39 +93,148 @@ void MainWindow::decideFirstPlayer() {
     }
 }
 
-void MainWindow::placeAttackingCard() {
+void MainWindow::placeAttackingCard(int cardNum) { //PA -> PA, does not change the state
+    QString card = playerDeck[cardNum];
+    int cardRank = getCardRank(card);
+    if (tableCards.empty() && tempBeatenCards.empty()) {
+        tableCards.push_back(card);
+        playerDeck.erase(playerDeck.begin() + cardNum, playerDeck.begin() + cardNum + 1);
+        update();
+
+    }
+    else {
+        bool sameRankExists = false;
+        for (unsigned i = 0; i < tableCards.size(); i++) {
+            if (cardRank == getCardRank(tableCards[i])) {
+                sameRankExists = true;
+                break;
+            }
+        }
+        if (!sameRankExists) {
+            for (unsigned i = 0; i < tempBeatenCards.size(); i++) {
+                if (cardRank == getCardRank(tempBeatenCards[i])) {
+                    sameRankExists = true;
+                    break;
+                }
+            }
+        }
+        if (sameRankExists) {
+            tableCards.push_back(card);
+            playerDeck.erase(playerDeck.begin() + cardNum, playerDeck.begin() + cardNum + 1);
+            update();
+        }
+    }
+}
+
+void MainWindow::playerPass() { //PA -> CD
 
 }
 
-void MainWindow::placeDefendingCard() {
+void MainWindow::playerFinishTurn() { //PA -> CA
 
 }
 
-void MainWindow::playerFinishTurn() {
+void MainWindow::placeDefendingCard(int cardNum) { //PD -> CA
+    QString defendingCard = playerDeck[cardNum];
+    QChar attackingCardSuit = getCardSuit(tableCards[0]);
+    int attackingCardRank = getCardRank(tableCards[0]);
+
+    if ((getCardSuit(defendingCard) == trumpCard && attackingCardSuit != trumpCard)
+            ||(getCardSuit(defendingCard) == attackingCardSuit &&
+               getCardRank(defendingCard) > attackingCardRank)) {
+            tempBeatenCards.push_back(tableCards[0]);
+            tempBeatenCards.push_back(playerDeck[cardNum]);
+            tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
+            playerDeck.erase(playerDeck.begin(), playerDeck.begin() + 1);
+            update();
+        }
+        else {
+           impossibleDefenseAttempt.exec();
+           update();
+        }
 
 }
 
-void MainWindow::playerPass() {
+void MainWindow::takeCards() { //PD -> CA
 
 }
 
-void MainWindow::takeCards() {
+void MainWindow::computerAttacks() { //CA -> PA/PD
+    QString attackingCard;
+    bool skip = false;
+    int attackingCardNum;
 
+    if (!tableCards.empty() || !tempBeatenCards.empty()) {
+        bool cardFound = false;
+        for (unsigned i = 0; i < tableCards.size(); i++) {
+            for (unsigned j = 0; j < opponentDeck.size(); j++) {
+                if (opponentDeck[j] == tableCards[i]) {
+                    attackingCard = opponentDeck[j];
+                    attackingCardNum = j;
+                    skip = true;
+                    cardFound = true;
+                    break;
+
+                }
+            }
+            if (skip) break;
+        }
+        if (cardFound) {
+            tableCards.push_back(attackingCard);
+            opponentDeck.erase(opponentDeck.begin() + attackingCardNum, opponentDeck.begin() + attackingCardNum + 1);
+            state = "PD";
+        } else {
+            tableCards.clear();
+            tempBeatenCards.clear();
+            state = "PA";
+        }
+    }
+    else {
+        tableCards.push_back(attackingCard);
+        opponentDeck.erase(opponentDeck.begin() + attackingCardNum, opponentDeck.begin() + attackingCardNum + 1);
+        state = "PD";
+    }
+    update();
 }
 
-void MainWindow::computerAttacks() {
-
+void MainWindow::computerDefends() { //CD -> PA
 }
 
-void MainWindow::computerDefends() {
+void MainWindow::fillHands() { // MID-TURN
+
 }
 
 void MainWindow::readCardFilter() {
+    QString card = this->ui->cardInput->text();
+    int cardNum = -145;
+    QString currentState = getCurrentState();
 
+    bool existence_of_card = false;
+
+    for (unsigned i = 0; i < playerDeck.size(); i++) {
+        if (playerDeck[i] == card) {
+            existence_of_card = true;
+            cardNum = i;
+            break;
+        }
+    }
+
+    if (!existence_of_card) {
+        incorrectInput.exec();
+        return;
+    }
+
+    if (currentState == "PA") placeAttackingCard(cardNum);
+    else if (currentState == "PD") placeDefendingCard(cardNum);
+    else incorrectTimeError.exec();
 }
 
 QChar MainWindow::getCardSuit(QString card) {
     return QChar(card[card.size()-1]);
+}
+
+QString MainWindow::getCurrentState() {
+    return state;
 }
 
 int MainWindow::getCardRank(QString card) {
@@ -129,9 +256,6 @@ int MainWindow::getCardRank(QString card) {
     }
 }
 
-QString MainWindow::getCurrentState() {
-
-}
 
 void MainWindow::update() {
     this->ui->DECK->setText("LEFT IN DECK: " + QString::fromStdString(std::to_string(shuffledDeck.size())) +
