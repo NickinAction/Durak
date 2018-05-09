@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QString>
+#include <QShortcut>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -21,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     giveoutCards();
     decideFirstPlayer();
 
+    connect(this->ui->cardInput, SIGNAL(returnPressed()), this, SLOT(readCardFilter()));
     connect(this->ui->readInput, SIGNAL(clicked()), this, SLOT(readCardFilter()));
     connect(this->ui->finishTurn, SIGNAL(clicked()), this, SLOT(playerFinishTurn()));
     connect(this->ui->passButton, SIGNAL(clicked()), this, SLOT(playerPass()));
@@ -32,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
     incorrectInput.setText("This card does not exist in your deck.");
     incorrectTimeError.setText("Please wait for your turn.");
     impossibleTakeAttempt.setText("You cannot take anything now.");
+    impossiblePassAttempt.setText("You cannot currently pass your turn.");
+    impossibleFinishTurnAttempt.setText("You cannot currently finish your turn.");
 
     update();
 }
@@ -53,7 +57,7 @@ void MainWindow::deckGenerator() {
 }
 
 void MainWindow::giveoutCards() {
-    trumpCard = getCardSuit(shuffledDeck.front());
+    trumpSuit = getCardSuit(shuffledDeck.front());
     //std::string x;
     for (int i = 0; i < 6; i++){
         opponentDeck.push_back(shuffledDeck.back());
@@ -69,23 +73,23 @@ void MainWindow::giveoutCards() {
 }
 
 void MainWindow::decideFirstPlayer() {
-    int smallestTrumpCard = 15;
+    int smallesttrumpSuit = 15;
     for (int i = 0; i < 6; i++) {
-        if (getCardSuit(playerDeck[i]) == trumpCard && getCardRank(playerDeck[i]) < smallestTrumpCard) {
-            smallestTrumpCard = getCardRank(playerDeck[i]);
+        if (getCardSuit(playerDeck[i]) == trumpSuit && getCardRank(playerDeck[i]) < smallesttrumpSuit) {
+            smallesttrumpSuit = getCardRank(playerDeck[i]);
         }
     }
-    int y = smallestTrumpCard;
-    smallestTrumpCard = 15;
+    int y = smallesttrumpSuit;
+    smallesttrumpSuit = 15;
 
     for (int i = 0; i < 6; i++) {
-        if (getCardSuit(opponentDeck[i]) == trumpCard && getCardRank(opponentDeck[i]) < smallestTrumpCard) {
-            smallestTrumpCard = getCardRank(opponentDeck[i]);
+        if (getCardSuit(opponentDeck[i]) == trumpSuit && getCardRank(opponentDeck[i]) < smallesttrumpSuit) {
+            smallesttrumpSuit = getCardRank(opponentDeck[i]);
         }
     }
-    int z = smallestTrumpCard;
+    int z = smallesttrumpSuit;
     if (z < y) { //can't be equal since it's a single deck
-        state = "CA";
+        state = "PA"; //CHANGE DIS IN FUTUR PLZZZZ !!!11
     }
     else {
         //If there was no trump card, both y & z == 15, so human goes first
@@ -127,11 +131,22 @@ void MainWindow::placeAttackingCard(int cardNum) { //PA -> PA, does not change t
 }
 
 void MainWindow::playerPass() { //PA -> CD
-
+    if (state != "PA" || tableCards.empty()) {
+        impossiblePassAttempt.exec();
+        return;
+    }
+    state = "CD";
+    qDebug("Player passed.");
+    computerDefends();
 }
 
 void MainWindow::playerFinishTurn() { //PA -> CA
-
+    if (state != "PA" || !(tableCards.empty() && !tempBeatenCards.empty())) {
+        impossibleFinishTurnAttempt.exec();
+        return;
+    }
+    state = "CA";
+    computerAttacks();
 }
 
 void MainWindow::placeDefendingCard(int cardNum) { //PD -> CA
@@ -139,13 +154,13 @@ void MainWindow::placeDefendingCard(int cardNum) { //PD -> CA
     QChar attackingCardSuit = getCardSuit(tableCards[0]);
     int attackingCardRank = getCardRank(tableCards[0]);
 
-    if ((getCardSuit(defendingCard) == trumpCard && attackingCardSuit != trumpCard)
+    if ((getCardSuit(defendingCard) == trumpSuit && attackingCardSuit != trumpSuit)
             ||(getCardSuit(defendingCard) == attackingCardSuit &&
                getCardRank(defendingCard) > attackingCardRank)) {
             tempBeatenCards.push_back(tableCards[0]);
             tempBeatenCards.push_back(playerDeck[cardNum]);
             tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
-            playerDeck.erase(playerDeck.begin(), playerDeck.begin() + 1);
+            playerDeck.erase(playerDeck.begin() + cardNum, playerDeck.begin() + cardNum + 1);
             update();
         }
         else {
@@ -198,14 +213,63 @@ void MainWindow::computerAttacks() { //CA -> PA/PD
 }
 
 void MainWindow::computerDefends() { //CD -> PA
+    qDebug("Computer starts its defence");
+    bool existence = false;
+    for (unsigned j = 0; j < tableCards.size(); j++) {
+        QString attackingCard = tableCards[0];
+
+        for (unsigned i = 0; i < opponentDeck.size(); i++) {
+           if ((getCardSuit(attackingCard) != trumpSuit && getCardSuit(opponentDeck[i]) == trumpSuit)// the card which we are hoping to defend with.
+               ||(getCardSuit(attackingCard) == getCardSuit(opponentDeck[i]) &&
+                   getCardRank(attackingCard) < getCardRank(opponentDeck[i]))) {
+               tempBeatenCards.push_back(tableCards[0]);
+               tempBeatenCards.push_back(opponentDeck[i]);
+               tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
+               opponentDeck.erase(opponentDeck.begin() + i, opponentDeck.begin() + i + 1);
+               existence = true;
+               qDebug("The card exists");
+               break;
+            }
+        }
+        if (existence) break;
+    }
+    //here we'll take
+    if (!existence) {
+        qDebug("The card doesn't exist");
+        for (unsigned i = 0; i < tableCards.size(); i++) {
+            opponentDeck.push_back(tableCards[i]);
+        }
+
+        for (unsigned i = 0; i < tempBeatenCards.size(); i++) {
+            opponentDeck.push_back(tempBeatenCards[i]);
+        }
+        tableCards.clear();
+        tempBeatenCards.clear();
+    }
+    update();
+    state = "PA";
 }
 
 void MainWindow::fillHands() { // MID-TURN
-
+    if (playerDeck.size() < 6) {
+        int addingPlayerCardsNum = 6 - playerDeck.size();
+        for (int i = 0; i < addingPlayerCardsNum; i++) {
+            playerDeck.push_back(shuffledDeck.back());
+            shuffledDeck.pop_back();
+        }
+    }
+    if (opponentDeck.size() < 6) {
+       int addingComputerCardsNum = 6 - opponentDeck.size();
+       for (int i = 0; i < addingComputerCardsNum; i++) {
+           opponentDeck.push_back(shuffledDeck.back());
+           shuffledDeck.pop_back();
+       }
+    }
+    update();
 }
 
 void MainWindow::readCardFilter() {
-    QString card = this->ui->cardInput->text();
+    QString card = this->ui->cardInput->text().toUpper();
     int cardNum = -145;
     QString currentState = getCurrentState();
 
@@ -256,10 +320,9 @@ int MainWindow::getCardRank(QString card) {
     }
 }
 
-
 void MainWindow::update() {
     this->ui->DECK->setText("LEFT IN DECK: " + QString::fromStdString(std::to_string(shuffledDeck.size())) +
-                            "\n\n\n\nTRUMP SUIT: " +  trumpCard);
+                            "\n\n\n\nTRUMP SUIT: " +  trumpSuit);
     QString playerDeckLabel;
     QString tableCardsLabel;
     QString tbcLabel;

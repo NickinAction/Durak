@@ -13,6 +13,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QString>
+#include <QShortcut>
 
 namespace Ui {
 class MainWindow;
@@ -65,7 +66,7 @@ private:
                                    "6H", "7H", "8H", "9H", "10H", "JH", "QH", "KH", "AH",
                                    "6D", "7D", "8D", "9D", "10D", "JD", "QD", "KD", "AD"};
     std::vector <QString> shuffledDeck;
-    QString trumpCard;
+    QString trumpSuit;
 
     std::vector <QString> playerDeck;
     std::vector <QString> opponentDeck;
@@ -80,6 +81,8 @@ private:
     QMessageBox impossibleDefenseAttempt;
     QMessageBox incorrectInput;
     QMessageBox impossibleTakeAttempt;
+    QMessageBox impossiblePassAttempt;
+    QMessageBox impossibleFinishTurnAttempt;
 };
 
 #endif // MAINWINDOW_H
