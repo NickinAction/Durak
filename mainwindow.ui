@@ -85,7 +85,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="playerTurnIndicator">
+   <widget class="QLabel" name="STATUS">
     <property name="geometry">
      <rect>
       <x>420</x>

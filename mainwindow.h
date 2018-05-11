@@ -56,6 +56,9 @@ private slots:
     int getCardRank(QString card);
     QString getCurrentState();
 
+    // Interface changes
+    //QString setStatusText(QString func);
+
 private:
     Ui::MainWindow *ui;
 

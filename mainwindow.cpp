@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QString>
 #include <QShortcut>
+#include <thread>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -146,6 +147,8 @@ void MainWindow::playerFinishTurn() { //PA -> CA
         return;
     }
     state = "CA";
+    tempBeatenCards.clear();
+    fillHands();
     computerAttacks();
 }
 
@@ -157,21 +160,26 @@ void MainWindow::placeDefendingCard(int cardNum) { //PD -> CA
     if ((getCardSuit(defendingCard) == trumpSuit && attackingCardSuit != trumpSuit)
             ||(getCardSuit(defendingCard) == attackingCardSuit &&
                getCardRank(defendingCard) > attackingCardRank)) {
-            tempBeatenCards.push_back(tableCards[0]);
-            tempBeatenCards.push_back(playerDeck[cardNum]);
-            tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
-            playerDeck.erase(playerDeck.begin() + cardNum, playerDeck.begin() + cardNum + 1);
-            update();
-        }
-        else {
-           impossibleDefenseAttempt.exec();
-           update();
-        }
+        tempBeatenCards.push_back(tableCards[0]);
+        tempBeatenCards.push_back(playerDeck[cardNum]);
+        tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
+        playerDeck.erase(playerDeck.begin() + cardNum, playerDeck.begin() + cardNum + 1);
+        update();
+    }
+    else {
+        impossibleDefenseAttempt.exec();
+        update();
+    }
+
+    if (tableCards.empty()) {
+        state = "CA";
+        computerAttacks();
+    }
 
 }
 
 void MainWindow::takeCards() { //PD -> CA
-
+    fillHands();
 }
 
 void MainWindow::computerAttacks() { //CA -> PA/PD
@@ -201,10 +209,13 @@ void MainWindow::computerAttacks() { //CA -> PA/PD
         } else {
             tableCards.clear();
             tempBeatenCards.clear();
+            fillHands();
             state = "PA";
         }
     }
     else {
+        attackingCardNum = rand() % 6;
+        attackingCard = opponentDeck[attackingCardNum];
         tableCards.push_back(attackingCard);
         opponentDeck.erase(opponentDeck.begin() + attackingCardNum, opponentDeck.begin() + attackingCardNum + 1);
         state = "PD";
@@ -215,7 +226,8 @@ void MainWindow::computerAttacks() { //CA -> PA/PD
 void MainWindow::computerDefends() { //CD -> PA
     qDebug("Computer starts its defence");
     bool existence = false;
-    for (unsigned j = 0; j < tableCards.size(); j++) {
+    while(!tableCards.empty()) {
+        existence = false;
         QString attackingCard = tableCards[0];
 
         for (unsigned i = 0; i < opponentDeck.size(); i++) {
@@ -227,11 +239,10 @@ void MainWindow::computerDefends() { //CD -> PA
                tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
                opponentDeck.erase(opponentDeck.begin() + i, opponentDeck.begin() + i + 1);
                existence = true;
-               qDebug("The card exists");
                break;
             }
         }
-        if (existence) break;
+        if (!existence) break;
     }
     //here we'll take
     if (!existence) {
@@ -245,6 +256,7 @@ void MainWindow::computerDefends() { //CD -> PA
         }
         tableCards.clear();
         tempBeatenCards.clear();
+        fillHands();
     }
     update();
     state = "PA";
@@ -270,6 +282,7 @@ void MainWindow::fillHands() { // MID-TURN
 
 void MainWindow::readCardFilter() {
     QString card = this->ui->cardInput->text().toUpper();
+    this->ui->cardInput->setText("");
     int cardNum = -145;
     QString currentState = getCurrentState();
 
@@ -319,6 +332,14 @@ int MainWindow::getCardRank(QString card) {
             return -145; //Error code
     }
 }
+
+/*QString MainWindow::setStatusBar(QString func) {
+    switch (func) {
+        case "Computer takes cards":
+
+    }
+
+}*/
 
 void MainWindow::update() {
     this->ui->DECK->setText("LEFT IN DECK: " + QString::fromStdString(std::to_string(shuffledDeck.size())) +
