@@ -86,6 +86,8 @@ private:
     QMessageBox impossibleTakeAttempt;
     QMessageBox impossiblePassAttempt;
     QMessageBox impossibleFinishTurnAttempt;
+    QMessageBox playerWins;
+    QMessageBox computerWins;
 };
 
 #endif // MAINWINDOW_H

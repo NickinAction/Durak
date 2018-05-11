@@ -37,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
     impossibleTakeAttempt.setText("You cannot take anything now.");
     impossiblePassAttempt.setText("You cannot currently pass your turn.");
     impossibleFinishTurnAttempt.setText("You cannot currently finish your turn.");
+    playerWins.setText("The Player Wins!");
+    computerWins.setText("The Computer Wins!");
 
     update();
 }
@@ -146,9 +148,9 @@ void MainWindow::playerFinishTurn() { //PA -> CA
         impossibleFinishTurnAttempt.exec();
         return;
     }
-    state = "CA";
     tempBeatenCards.clear();
     fillHands();
+    state = "CA";
     computerAttacks();
 }
 
@@ -179,7 +181,18 @@ void MainWindow::placeDefendingCard(int cardNum) { //PD -> CA
 }
 
 void MainWindow::takeCards() { //PD -> CA
+    for (unsigned i = 0; i < tableCards.size(); i++) {
+        playerDeck.push_back(tableCards[i]);
+    }
+    tableCards.clear();
+
+    for (unsigned i = 0; i < tempBeatenCards.size(); i++) {
+        playerDeck.push_back(tempBeatenCards[i]);
+    }
+    tempBeatenCards.clear();
     fillHands();
+    state = "CA";
+
 }
 
 void MainWindow::computerAttacks() { //CA -> PA/PD
@@ -263,21 +276,41 @@ void MainWindow::computerDefends() { //CD -> PA
 }
 
 void MainWindow::fillHands() { // MID-TURN
-    if (playerDeck.size() < 6) {
-        int addingPlayerCardsNum = 6 - playerDeck.size();
-        for (int i = 0; i < addingPlayerCardsNum; i++) {
-            playerDeck.push_back(shuffledDeck.back());
-            shuffledDeck.pop_back();
-        }
+    if (state == "PA" || state == "CD"){
+        for (int i = 0; playerDeck.size() < 6; i++) {
+                if (shuffledDeck.empty()) break;
+                playerDeck.push_back(shuffledDeck.back());
+                shuffledDeck.pop_back();
+            }
+        for (int i = 0; opponentDeck.size() < 6; i++) {
+               if (shuffledDeck.empty()) break;
+               opponentDeck.push_back(shuffledDeck.back());
+               shuffledDeck.pop_back();
+           }
+        update();
     }
-    if (opponentDeck.size() < 6) {
-       int addingComputerCardsNum = 6 - opponentDeck.size();
-       for (int i = 0; i < addingComputerCardsNum; i++) {
-           opponentDeck.push_back(shuffledDeck.back());
-           shuffledDeck.pop_back();
-       }
+    else {
+        for (int i = 0; opponentDeck.size() < 6; i++) {
+               if (shuffledDeck.empty()) break;
+               opponentDeck.push_back(shuffledDeck.back());
+               shuffledDeck.pop_back();
+           }
+        for (int i = 0; playerDeck.size() < 6; i++) {
+                if (shuffledDeck.empty()) break;
+                playerDeck.push_back(shuffledDeck.back());
+                shuffledDeck.pop_back();
+            }
+        update();
     }
-    update();
+    if (playerDeck.empty()) {
+        playerWins.exec();
+        QApplication::quit();
+    }
+    if (opponentDeck.empty()) {
+        computerWins.exec();
+        QApplication::quit();
+    }
+
 }
 
 void MainWindow::readCardFilter() {
