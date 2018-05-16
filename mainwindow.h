@@ -14,6 +14,7 @@
 #include <QDebug>
 #include <QString>
 #include <QShortcut>
+#include <QKeySequence>
 
 namespace Ui {
 class MainWindow;
@@ -55,6 +56,9 @@ private slots:
     QChar getCardSuit(QString card);
     int getCardRank(QString card);
     QString getCurrentState();
+    bool firstCardBeatsSecond(QString card1, QString card2);\
+    void showCredits();
+    void toggleDevMode();
 
     // Interface changes
     //QString setStatusText(QString func);
@@ -77,6 +81,7 @@ private:
     std::vector <QString> tempBeatenCards;
 
     QString state; //values: "PA", "PD", "CA", "CD"
+    bool devMode = false;
 
     //Error messages
     QMessageBox incorrectTimeError; //Not the player's turn
@@ -88,6 +93,9 @@ private:
     QMessageBox impossibleFinishTurnAttempt;
     QMessageBox playerWins;
     QMessageBox computerWins;
+    QMessageBox credits;
+
+    QShortcut* devModeShortcut;
 };
 
 #endif // MAINWINDOW_H

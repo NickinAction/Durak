@@ -12,6 +12,8 @@
 #include <QString>
 #include <QShortcut>
 #include <thread>
+#include <QKeySequence>
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -23,11 +25,15 @@ MainWindow::MainWindow(QWidget *parent) :
     giveoutCards();
     decideFirstPlayer();
 
+    devModeShortcut = new QShortcut(QKeySequence(tr("Ctrl+Shift+Alt+D")), this);
+
+    connect(this->devModeShortcut, SIGNAL(activated()), this, SLOT(toggleDevMode()));
     connect(this->ui->cardInput, SIGNAL(returnPressed()), this, SLOT(readCardFilter()));
     connect(this->ui->readInput, SIGNAL(clicked()), this, SLOT(readCardFilter()));
     connect(this->ui->finishTurn, SIGNAL(clicked()), this, SLOT(playerFinishTurn()));
     connect(this->ui->passButton, SIGNAL(clicked()), this, SLOT(playerPass()));
     connect(this->ui->takeButton, SIGNAL(clicked()), this, SLOT(takeCards()));
+    connect(this->ui->SECRETDEVBUTTON, SIGNAL(clicked()), this, SLOT(showCredits()));
 
 
     impossibleAttackAttempt.setText("You cannot currently place this card.");
@@ -39,6 +45,10 @@ MainWindow::MainWindow(QWidget *parent) :
     impossibleFinishTurnAttempt.setText("You cannot currently finish your turn.");
     playerWins.setText("The Player Wins!");
     computerWins.setText("The Computer Wins!");
+    credits.setText("Why did you even click this?"
+                    "\nAnyway, this program has been made by NickinAction"
+                    "\nwith the help of QuantumCat.");
+
 
     update();
 }
@@ -192,6 +202,7 @@ void MainWindow::takeCards() { //PD -> CA
     tempBeatenCards.clear();
     fillHands();
     state = "CA";
+    computerAttacks();
 
 }
 
@@ -238,27 +249,32 @@ void MainWindow::computerAttacks() { //CA -> PA/PD
 
 void MainWindow::computerDefends() { //CD -> PA
     qDebug("Computer starts its defence");
-    bool existence = false;
+    bool existence;
+    int bestCardNum = -1;
     while(!tableCards.empty()) {
         existence = false;
         QString attackingCard = tableCards[0];
 
         for (unsigned i = 0; i < opponentDeck.size(); i++) {
-           if ((getCardSuit(attackingCard) != trumpSuit && getCardSuit(opponentDeck[i]) == trumpSuit)// the card which we are hoping to defend with.
-               ||(getCardSuit(attackingCard) == getCardSuit(opponentDeck[i]) &&
-                   getCardRank(attackingCard) < getCardRank(opponentDeck[i]))) {
-               tempBeatenCards.push_back(tableCards[0]);
-               tempBeatenCards.push_back(opponentDeck[i]);
-               tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
-               opponentDeck.erase(opponentDeck.begin() + i, opponentDeck.begin() + i + 1);
+           if (firstCardBeatsSecond(opponentDeck[i], attackingCard)) {
                existence = true;
-               break;
+               if (bestCardNum == -1 ||
+                       firstCardBeatsSecond(opponentDeck[bestCardNum], opponentDeck[i])) {
+                   bestCardNum = i;
+               }
             }
         }
-        if (!existence) break;
+        if (existence) {
+            tempBeatenCards.push_back(tableCards[0]);
+            tempBeatenCards.push_back(opponentDeck[bestCardNum]);
+            tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
+            opponentDeck.erase(opponentDeck.begin() + bestCardNum, opponentDeck.begin() + bestCardNum + 1);
+        }
+        else break;
     }
+
     //here we'll take
-    if (!existence) {
+    if(!existence) {
         qDebug("The card doesn't exist");
         for (unsigned i = 0; i < tableCards.size(); i++) {
             opponentDeck.push_back(tableCards[i]);
@@ -339,6 +355,15 @@ void MainWindow::readCardFilter() {
     else incorrectTimeError.exec();
 }
 
+bool MainWindow::firstCardBeatsSecond(QString card1, QString card2) {
+    if ((getCardSuit(card1) == trumpSuit && getCardSuit(card2) != trumpSuit)
+            ||(getCardSuit(card1) == getCardSuit(card2) &&
+               getCardRank(card1) > getCardRank(card2))) {
+        return true;
+    }
+    else return false;
+}
+
 QChar MainWindow::getCardSuit(QString card) {
     return QChar(card[card.size()-1]);
 }
@@ -366,13 +391,17 @@ int MainWindow::getCardRank(QString card) {
     }
 }
 
-/*QString MainWindow::setStatusBar(QString func) {
-    switch (func) {
-        case "Computer takes cards":
-
+void MainWindow::showCredits(){
+    if(devMode) { //Show the opponent's cards
+    QString opponentDeckLabel = "";
+    for (unsigned i = 0; i < opponentDeck.size(); i++) {
+        opponentDeckLabel = opponentDeckLabel + " " + opponentDeck[i];
     }
-
-}*/
+    this->ui->OPPONENT->setText(opponentDeckLabel);
+    } else {
+        credits.exec();
+    }
+}
 
 void MainWindow::update() {
     this->ui->DECK->setText("LEFT IN DECK: " + QString::fromStdString(std::to_string(shuffledDeck.size())) +
@@ -397,4 +426,8 @@ void MainWindow::update() {
     this->ui->TABLE->setText("TABLE: " + tableCardsLabel);
     this->ui->OPPONENT->setText(QString::fromStdString(std::string(opponentDeck.size(), 'X')));
     this->ui->TBC->setText("TBC: " + tbcLabel);
+}
+
+void MainWindow::toggleDevMode() {
+    devMode = !devMode;
 }
