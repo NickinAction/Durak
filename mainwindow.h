@@ -46,6 +46,7 @@ private slots:
     //Computer turns
     void computerAttacks();
     void computerDefends();
+    bool doesItTake(QString attackingCard, QString defendingCard);
 
     //Mid-turn
     void fillHands();
@@ -56,6 +57,7 @@ private slots:
     QChar getCardSuit(QString card);
     int getCardRank(QString card);
     QString getCurrentState();
+    int getCardValue(QString card);
     bool firstCardBeatsSecond(QString card1, QString card2);\
     void showCredits();
     void toggleDevMode();
