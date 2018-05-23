@@ -103,10 +103,11 @@ void MainWindow::decideFirstPlayer() {
     }
     int z = smallesttrumpSuit;
     if (z < y) { //can't be equal since it's a single deck
-        state = "PA"; //CHANGE DIS IN FUTUR PLZZZZ !!!11
+        state = "CA";
+        computerAttacks();
     }
     else {
-        //If there was no trump card, both y & z == 15, so human goes first
+        //If there was no trump card, both y & z == 15, so player goes first.
         state = "PA";
     }
 }
@@ -163,8 +164,10 @@ void MainWindow::playerFinishTurn() { //PA -> CA
     }
     tempBeatenCards.clear();
     fillHands();
-    state = "CA";
-    computerAttacks();
+    if (!gameover) {
+        state = "CA";
+        computerAttacks();
+    }
 }
 
 void MainWindow::placeDefendingCard(int cardNum) { //PD -> CA
@@ -201,8 +204,10 @@ void MainWindow::takeCards() { //PD -> CA
     }
     tempBeatenCards.clear();
     fillHands();
-    state = "CA";
-    computerAttacks();
+    if (!gameover) {
+        state = "CA";
+        computerAttacks();
+    }
 
 }
 
@@ -313,27 +318,23 @@ bool MainWindow::doesItTake(QString attackingCard, QString defendingCard) {
 }
 
 void MainWindow::fillHands() { // MID-TURN
-    if (state == "PA" || state == "CD"){
-        for (int i = 0; playerDeck.size() < 6; i++) {
-                if (shuffledDeck.empty()) break;
+    if (state == "PA" || state == "CD") {
+        while(playerDeck.size() < 6 && !shuffledDeck.empty()) {
                 playerDeck.push_back(shuffledDeck.back());
                 shuffledDeck.pop_back();
             }
-        for (int i = 0; opponentDeck.size() < 6; i++) {
-               if (shuffledDeck.empty()) break;
+        while(opponentDeck.size() < 6 && !shuffledDeck.empty()) {
                opponentDeck.push_back(shuffledDeck.back());
                shuffledDeck.pop_back();
            }
         update();
     }
     else {
-        for (int i = 0; opponentDeck.size() < 6; i++) {
-               if (shuffledDeck.empty()) break;
+        while(opponentDeck.size() < 6 && !shuffledDeck.empty()) {
                opponentDeck.push_back(shuffledDeck.back());
                shuffledDeck.pop_back();
            }
-        for (int i = 0; playerDeck.size() < 6; i++) {
-                if (shuffledDeck.empty()) break;
+        while(playerDeck.size() < 6 && !shuffledDeck.empty()) {
                 playerDeck.push_back(shuffledDeck.back());
                 shuffledDeck.pop_back();
             }
@@ -342,10 +343,12 @@ void MainWindow::fillHands() { // MID-TURN
     if (playerDeck.empty()) {
         playerWins.exec();
         QApplication::quit();
+        gameover = true;
     }
     if (opponentDeck.empty()) {
         computerWins.exec();
         QApplication::quit();
+        gameover = true;
     }
 
 }

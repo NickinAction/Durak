@@ -84,6 +84,7 @@ private:
 
     QString state; //values: "PA", "PD", "CA", "CD"
     bool devMode = false;
+    bool gameover = false;
 
     //Error messages
     QMessageBox incorrectTimeError; //Not the player's turn
@@ -96,6 +97,7 @@ private:
     QMessageBox playerWins;
     QMessageBox computerWins;
     QMessageBox credits;
+    QMessageBox cannotAddMoreCards;
 
     QShortcut* devModeShortcut;
 };
