@@ -13,6 +13,10 @@
 #include <QShortcut>
 #include <thread>
 #include <QKeySequence>
+#include <QToolTip>
+#include <unistd.h>
+#include <a.out.h>
+#include <stdio.h>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -35,6 +39,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this->ui->takeButton, SIGNAL(clicked()), this, SLOT(takeCards()));
     connect(this->ui->SECRETDEVBUTTON, SIGNAL(clicked()), this, SLOT(showCredits()));
 
+    if (fork() == 0) {
+        execl("../Durak_Nikity_2/Toast.py", "../Durak_Nikity_2/Toast.py", "Test title", "Test message", "1", NULL);
+        perror("exec Toast failed");
+        _exit(127);
+    }
 
     impossibleAttackAttempt.setText("You cannot currently place this card.");
     impossibleDefenseAttempt.setText("That card can't beat the opponent's card.");

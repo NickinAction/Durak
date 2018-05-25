@@ -15,6 +15,7 @@
 #include <QString>
 #include <QShortcut>
 #include <QKeySequence>
+#include <QToolTip>
 
 namespace Ui {
 class MainWindow;
@@ -96,6 +97,7 @@ private:
     QMessageBox credits;
 
     QShortcut* devModeShortcut;
+    //QToolTip toast;
 };
 
 #endif // MAINWINDOW_H
