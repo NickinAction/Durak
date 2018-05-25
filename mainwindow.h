@@ -47,6 +47,7 @@ private slots:
     //Computer turns
     void computerAttacks();
     void computerDefends();
+    bool doesItTake(QString attackingCard, QString defendingCard);
 
     //Mid-turn
     void fillHands();
@@ -57,6 +58,7 @@ private slots:
     QChar getCardSuit(QString card);
     int getCardRank(QString card);
     QString getCurrentState();
+    int getCardValue(QString card);
     bool firstCardBeatsSecond(QString card1, QString card2);\
     void showCredits();
     void toggleDevMode();
@@ -83,6 +85,7 @@ private:
 
     QString state; //values: "PA", "PD", "CA", "CD"
     bool devMode = false;
+    bool gameover = false;
 
     //Error messages
     QMessageBox incorrectTimeError; //Not the player's turn
@@ -95,6 +98,7 @@ private:
     QMessageBox playerWins;
     QMessageBox computerWins;
     QMessageBox credits;
+    QMessageBox cannotAddMoreCards;
 
     QShortcut* devModeShortcut;
     //QToolTip toast;

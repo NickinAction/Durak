@@ -56,7 +56,8 @@ MainWindow::MainWindow(QWidget *parent) :
     computerWins.setText("The Computer Wins!");
     credits.setText("Why did you even click this?"
                     "\nAnyway, this program has been made by NickinAction"
-                    "\nwith the help of QuantumCat.");
+                    "\nwith the help of QuantCat.");
+    cannotAddMoreCards.setText("Can't add, excess cards.");
 
 
     update();
@@ -111,10 +112,11 @@ void MainWindow::decideFirstPlayer() {
     }
     int z = smallesttrumpSuit;
     if (z < y) { //can't be equal since it's a single deck
-        state = "PA"; //CHANGE DIS IN FUTUR PLZZZZ !!!11
+        state = "CA";
+        computerAttacks();
     }
     else {
-        //If there was no trump card, both y & z == 15, so human goes first
+        //If there was no trump card, both y & z == 15, so player goes first.
         state = "PA";
     }
 }
@@ -148,6 +150,8 @@ void MainWindow::placeAttackingCard(int cardNum) { //PA -> PA, does not change t
             tableCards.push_back(card);
             playerDeck.erase(playerDeck.begin() + cardNum, playerDeck.begin() + cardNum + 1);
             update();
+        } else {
+            impossibleAttackAttempt.exec();
         }
     }
 }
@@ -169,18 +173,17 @@ void MainWindow::playerFinishTurn() { //PA -> CA
     }
     tempBeatenCards.clear();
     fillHands();
-    state = "CA";
-    computerAttacks();
+    if (!gameover) {
+        state = "CA";
+        computerAttacks();
+    }
 }
 
 void MainWindow::placeDefendingCard(int cardNum) { //PD -> CA
     QString defendingCard = playerDeck[cardNum];
-    QChar attackingCardSuit = getCardSuit(tableCards[0]);
-    int attackingCardRank = getCardRank(tableCards[0]);
+    QString attackingCard = tableCards[0];
 
-    if ((getCardSuit(defendingCard) == trumpSuit && attackingCardSuit != trumpSuit)
-            ||(getCardSuit(defendingCard) == attackingCardSuit &&
-               getCardRank(defendingCard) > attackingCardRank)) {
+    if (firstCardBeatsSecond(defendingCard, attackingCard)) {
         tempBeatenCards.push_back(tableCards[0]);
         tempBeatenCards.push_back(playerDeck[cardNum]);
         tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
@@ -210,8 +213,10 @@ void MainWindow::takeCards() { //PD -> CA
     }
     tempBeatenCards.clear();
     fillHands();
-    state = "CA";
-    computerAttacks();
+    if (!gameover) {
+        state = "CA";
+        computerAttacks();
+    }
 
 }
 
@@ -221,6 +226,8 @@ void MainWindow::computerAttacks() { //CA -> PA/PD
     int attackingCardNum;
 
     if (!tableCards.empty() || !tempBeatenCards.empty()) {
+
+
         bool cardFound = false;
         for (unsigned i = 0; i < tableCards.size(); i++) {
             for (unsigned j = 0; j < opponentDeck.size(); j++) {
@@ -247,10 +254,19 @@ void MainWindow::computerAttacks() { //CA -> PA/PD
         }
     }
     else {
-        attackingCardNum = rand() % 6;
-        attackingCard = opponentDeck[attackingCardNum];
+        int bestAttackingCardNum = -1;
+        for (unsigned i = 0; i < opponentDeck.size(); i++) {
+            if (bestAttackingCardNum == -1) {
+                bestAttackingCardNum = i;
+            }
+            if (getCardValue(opponentDeck[i]) < getCardValue(opponentDeck[bestAttackingCardNum])) {
+                bestAttackingCardNum = i;
+            }
+        }
+
+        attackingCard = opponentDeck[bestAttackingCardNum];
         tableCards.push_back(attackingCard);
-        opponentDeck.erase(opponentDeck.begin() + attackingCardNum, opponentDeck.begin() + attackingCardNum + 1);
+        opponentDeck.erase(opponentDeck.begin() + bestAttackingCardNum, opponentDeck.begin() + bestAttackingCardNum + 1);
         state = "PD";
     }
     update();
@@ -258,32 +274,35 @@ void MainWindow::computerAttacks() { //CA -> PA/PD
 
 void MainWindow::computerDefends() { //CD -> PA
     qDebug("Computer starts its defence");
-    bool existence;
-    int bestCardNum = -1;
+    bool take;
+    int bestCardNum;
     while(!tableCards.empty()) {
-        existence = false;
+        take = true;
+        bestCardNum = -1;
         QString attackingCard = tableCards[0];
 
         for (unsigned i = 0; i < opponentDeck.size(); i++) {
-           if (firstCardBeatsSecond(opponentDeck[i], attackingCard)) {
-               existence = true;
+           if (firstCardBeatsSecond(opponentDeck[i], attackingCard) &&
+                   !doesItTake(attackingCard, opponentDeck[i])) {
+               take = false;
                if (bestCardNum == -1 ||
                        firstCardBeatsSecond(opponentDeck[bestCardNum], opponentDeck[i])) {
                    bestCardNum = i;
+                   qDebug() << "Current best card to beat " << attackingCard << " is " << opponentDeck[bestCardNum];
                }
             }
         }
-        if (existence) {
+        if (!take) {
             tempBeatenCards.push_back(tableCards[0]);
             tempBeatenCards.push_back(opponentDeck[bestCardNum]);
             tableCards.erase(tableCards.begin(), tableCards.begin() + 1);
+            qDebug() << attackingCard << " was beaten by " << opponentDeck[bestCardNum];
             opponentDeck.erase(opponentDeck.begin() + bestCardNum, opponentDeck.begin() + bestCardNum + 1);
         }
         else break;
     }
 
-    //here we'll take
-    if(!existence) {
+    if(take) {
         qDebug("The card doesn't exist");
         for (unsigned i = 0; i < tableCards.size(); i++) {
             opponentDeck.push_back(tableCards[i]);
@@ -300,28 +319,31 @@ void MainWindow::computerDefends() { //CD -> PA
     state = "PA";
 }
 
+bool MainWindow::doesItTake(QString attackingCard, QString defendingCard) {
+    int k = (getCardValue(defendingCard) - getCardValue(attackingCard)) * (shuffledDeck.size()/24);
+    //24 - max size of the deck
+    qDebug() << "For attack is " << attackingCard << ", for defence is " << defendingCard << "; k = " << k;
+    return k > 5;
+}
+
 void MainWindow::fillHands() { // MID-TURN
-    if (state == "PA" || state == "CD"){
-        for (int i = 0; playerDeck.size() < 6; i++) {
-                if (shuffledDeck.empty()) break;
+    if (state == "PA" || state == "CD") {
+        while(playerDeck.size() < 6 && !shuffledDeck.empty()) {
                 playerDeck.push_back(shuffledDeck.back());
                 shuffledDeck.pop_back();
             }
-        for (int i = 0; opponentDeck.size() < 6; i++) {
-               if (shuffledDeck.empty()) break;
+        while(opponentDeck.size() < 6 && !shuffledDeck.empty()) {
                opponentDeck.push_back(shuffledDeck.back());
                shuffledDeck.pop_back();
            }
         update();
     }
     else {
-        for (int i = 0; opponentDeck.size() < 6; i++) {
-               if (shuffledDeck.empty()) break;
+        while(opponentDeck.size() < 6 && !shuffledDeck.empty()) {
                opponentDeck.push_back(shuffledDeck.back());
                shuffledDeck.pop_back();
            }
-        for (int i = 0; playerDeck.size() < 6; i++) {
-                if (shuffledDeck.empty()) break;
+        while(playerDeck.size() < 6 && !shuffledDeck.empty()) {
                 playerDeck.push_back(shuffledDeck.back());
                 shuffledDeck.pop_back();
             }
@@ -330,10 +352,12 @@ void MainWindow::fillHands() { // MID-TURN
     if (playerDeck.empty()) {
         playerWins.exec();
         QApplication::quit();
+        gameover = true;
     }
     if (opponentDeck.empty()) {
         computerWins.exec();
         QApplication::quit();
+        gameover = true;
     }
 
 }
@@ -398,6 +422,14 @@ int MainWindow::getCardRank(QString card) {
         default:
             return -145; //Error code
     }
+}
+
+int MainWindow::getCardValue(QString card) {
+    int value = getCardRank(card);
+    if (getCardSuit(card) == trumpSuit) {
+        value += 9;
+    }
+    return value;
 }
 
 void MainWindow::showCredits(){
