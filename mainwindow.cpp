@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "toast.h"
 #include <QMainWindow>
 #include <deque>
 #include <random>
@@ -39,11 +40,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this->ui->takeButton, SIGNAL(clicked()), this, SLOT(takeCards()));
     connect(this->ui->SECRETDEVBUTTON, SIGNAL(clicked()), this, SLOT(showCredits()));
 
-    if (fork() == 0) {
+    /*if (fork() == 0) {
         execl("../Durak_Nikity_2/Toast.py", "../Durak_Nikity_2/Toast.py", "Test title", "Test message", "1", NULL);
         perror("exec Toast failed");
         _exit(127);
-    }
+    }*/
+
+    Toast* toast = new Toast(this, "1234567890", 3, 0, 50, 250, 150);
+    toast->show();
 
     impossibleAttackAttempt.setText("You cannot currently place this card.");
     impossibleDefenseAttempt.setText("That card can't beat the opponent's card.");

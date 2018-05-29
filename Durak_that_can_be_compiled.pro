@@ -25,12 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    toast.cpp
 
 CONFIG   += c++11
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    toast.h
 
 FORMS += \
         mainwindow.ui
