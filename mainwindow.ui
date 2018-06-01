@@ -107,7 +107,7 @@
      <cursorShape>ArrowCursor</cursorShape>
     </property>
     <property name="text">
-     <string>YOUR TURN</string>
+     <string> </string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

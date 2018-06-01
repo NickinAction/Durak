@@ -16,7 +16,6 @@
 #include <QKeySequence>
 #include <QToolTip>
 #include <unistd.h>
-#include <a.out.h>
 #include <stdio.h>
 
 class ToastThread : public QThread
@@ -34,7 +33,7 @@ class Toast : public QWidget
     Q_OBJECT
 public:
     explicit Toast(QWidget *parent = nullptr, QString init_message = "Hello, world!", int init_duration = 3,
-                   int x1 = 0, int y1 = 0, int x2 = 200, int y2 = 150);
+                   int x = 0, int y = 0, int width = 200, int height = 150);
 
 signals:
 

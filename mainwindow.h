@@ -96,10 +96,18 @@ private:
     QMessageBox impossibleTakeAttempt;
     QMessageBox impossiblePassAttempt;
     QMessageBox impossibleFinishTurnAttempt;
+    QMessageBox cannotAddMoreCards;
+
+    //Other messages
     QMessageBox playerWins;
     QMessageBox computerWins;
     QMessageBox credits;
-    QMessageBox cannotAddMoreCards;
+
+    //Toast messages
+    //Toast* opponent_takes_card = new Toast(this, "Opponent takes cards", 3, 420, 180, 211, 71);
+    //Toast* player_turn_indicator = new Toast(this, "YOUR TURN", 3, 420, 180, 211, 71);
+
+
 
     QShortcut* devModeShortcut;
     //QToolTip toast;

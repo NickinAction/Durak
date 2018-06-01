@@ -16,7 +16,6 @@
 #include <QKeySequence>
 #include <QToolTip>
 #include <unistd.h>
-#include <a.out.h>
 #include <stdio.h>
 
 
@@ -39,15 +38,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this->ui->passButton, SIGNAL(clicked()), this, SLOT(playerPass()));
     connect(this->ui->takeButton, SIGNAL(clicked()), this, SLOT(takeCards()));
     connect(this->ui->SECRETDEVBUTTON, SIGNAL(clicked()), this, SLOT(showCredits()));
-
-    /*if (fork() == 0) {
-        execl("../Durak_Nikity_2/Toast.py", "../Durak_Nikity_2/Toast.py", "Test title", "Test message", "1", NULL);
-        perror("exec Toast failed");
-        _exit(127);
-    }*/
-
-    Toast* toast = new Toast(this, "1234567890", 3, 0, 50, 250, 150);
-    toast->show();
 
     impossibleAttackAttempt.setText("You cannot currently place this card.");
     impossibleDefenseAttempt.setText("That card can't beat the opponent's card.");
@@ -228,6 +218,8 @@ void MainWindow::computerAttacks() { //CA -> PA/PD
     QString attackingCard;
     bool skip = false;
     int attackingCardNum;
+    Toast* player_turn_indicator = new Toast(this, "YOUR TURN", 2, 420, 180, 211, 71);
+    player_turn_indicator->show();
 
     if (!tableCards.empty() || !tempBeatenCards.empty()) {
 
@@ -307,6 +299,8 @@ void MainWindow::computerDefends() { //CD -> PA
     }
 
     if(take) {
+        Toast* opponent_takes_card = new Toast(this, "Opponent takes cards", 3, 420, 180, 211, 125);
+        opponent_takes_card->show();
         qDebug("The card doesn't exist");
         for (unsigned i = 0; i < tableCards.size(); i++) {
             opponentDeck.push_back(tableCards[i]);
@@ -318,6 +312,9 @@ void MainWindow::computerDefends() { //CD -> PA
         tableCards.clear();
         tempBeatenCards.clear();
         fillHands();
+    } else {
+        Toast* player_turn_indicator = new Toast(this, "YOUR TURN", 3, 420, 180, 211, 71);
+        player_turn_indicator->show();
     }
     update();
     state = "PA";
